@@ -90,6 +90,7 @@
     root.innerHTML='<div class="card" style="border-color:#f472b6"><b>18+</b> Fictional chat · 실관계 아님 · field#1 18+ pack</div>'
       +'<div class="card"><span class="chip">🔥 '+sc+'일'+(sc>=3&&ready?' · 🛡️':'')+'</span> <span class="chip">일일창 '+fomoLeft()+'</span>'
       +'<div style="margin-top:8px">크레딧 <b style="color:var(--gold)">'+credits+'</b> · 말 '+msgs+' · 세션 '+sessions+' · 오늘 대화 '+todayTalks()+'/3'+(mood?' · 무드 <b>'+mood+'</b>':'')+'</div>'
+      +'<div style="height:6px;background:#1c1826;border-radius:4px;margin:8px 0 0;overflow:hidden" title="오늘 대화 목표 3"><i style="display:block;height:100%;width:'+Math.min(100,Math.round(todayTalks()/3*100))+'%;background:linear-gradient(90deg,#f472b6,#e0b552)"></i></div>'
       +(mem.length?'<div class="sub" style="margin-top:6px">기억: '+mem.slice(0,3).map(function(x){return String(x).replace(/</g,'&lt;');}).join(' · ')+'</div>':'')
       +(greet?'<p style="font-size:13px;opacity:.85;margin:8px 0 0">'+greet+'</p>':'')
       +'<div class="row" style="margin:8px 0;gap:6px">'+moods.map(function(m){return '<button class="sec" data-mood="'+m.id+'" style="padding:6px 10px;font-size:12px'+(mood===m.l?';border-color:var(--gold)':'')+'">'+m.l+'</button>';}).join('')+'</div>'
@@ -110,7 +111,7 @@
       })()
       +'<input id="userIn" placeholder="하고 싶은 말 (선택)" style="width:100%;margin:6px 0;padding:10px;border-radius:10px;border:1px solid #2a2438;background:#0e0c14;color:#ece8f1"/>'
       +'<div class="row" style="gap:6px;margin-bottom:6px"><button id="talk" style="flex:1">한 마디 (-1)</button><button class="sec" id="undoChat"'+(log.length<2?' disabled style="opacity:.45"':'')+'>↩ 직전</button><button class="sec" id="free"'+(freeUsed?' disabled style="opacity:.5"':'')+'>'+(freeUsed?'오늘 받음 ✓':'일일 +3')+'</button></div>'
-      +'<div class="row" style="gap:6px;margin-bottom:8px"><button class="sec" id="exportLog" style="flex:1;font-size:12px">⬇ 대화 백업</button><button class="sec" id="clrMem" style="flex:1;font-size:12px"'+(mem.length?'':' disabled style="opacity:.45"')+'>기억 비우기</button></div>'
+      +'<div class="row" style="gap:6px;margin-bottom:8px"><button class="sec" id="exportLog" style="flex:1;font-size:12px">⬇ 대화 백업</button><button class="sec" id="pinLast" style="flex:1;font-size:12px"'+(log.length?'':' disabled style="opacity:.45"')+'>📌 마지막 기억</button><button class="sec" id="clrMem" style="flex:1;font-size:12px"'+(mem.length?'':' disabled style="opacity:.45"')+'>기억 비우기</button></div>'
       +'<div id="sharePeak" style="display:none;margin-top:12px;padding:10px;border:1px solid #f472b644;border-radius:12px">'
       +'<p style="margin:0 0 6px;font-size:13px">✨ 지금 순간 공유</p>'
       +'<button class="sec" id="shareBtn">📤 공유</button></div>'
@@ -164,6 +165,20 @@
     };
     var cm=document.getElementById('clrMem');
     if(cm) cm.onclick=function(){ mem=[]; saveMem(); render(); try{legionTrack('mem_clear',{})}catch(e){} };
+    var pl=document.getElementById('pinLast');
+    if(pl) pl.onclick=function(){
+      try{
+        var last='';
+        for(var i=log.length-1;i>=0;i--){
+          if(log[i].indexOf('나: ')===0){ last=log[i].slice(3).trim(); break; }
+          if(log[i].indexOf('AI: ')===0 && !last) last=log[i].slice(4).replace(/^\[[^\]]+\]\s*/,'').trim();
+        }
+        if(!last) return;
+        last=last.slice(0,40);
+        if(mem.indexOf(last)<0) mem.unshift(last);
+        saveMem(); render(); try{legionTrack('mem_pin',{})}catch(e){}
+      }catch(e){}
+    };
     Array.prototype.forEach.call(document.querySelectorAll('[data-kw]'),function(b){
       b.onclick=function(){
         var ui=document.getElementById('userIn');
