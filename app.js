@@ -128,7 +128,7 @@ try{if(!sessionStorage.getItem('lw_p34_ai_compa_session_counter')){sessionStorag
       })()
       +'<input id="userIn" placeholder="하고 싶은 말 (선택)" style="width:100%;margin:6px 0;padding:10px;border-radius:10px;border:1px solid #2a2438;background:#0e0c14;color:#ece8f1"/>'
       +'<div class="row" style="gap:6px;margin-bottom:6px"><button id="talk" style="flex:1">한 마디 (-1)</button><button class="sec" id="undoChat"'+(log.length<2?' disabled style="opacity:.45"':'')+'>↩ 직전</button><button class="sec" id="free"'+(freeUsed?' disabled style="opacity:.5"':'')+'>'+(freeUsed?'오늘 받음 ✓':'일일 +3')+'</button></div>'
-      +'<div class="row" style="gap:6px;margin-bottom:8px"><button class="sec" id="exportLog" style="flex:1;font-size:12px">⬇ 대화 백업</button><label class="sec" style="flex:1;font-size:12px;text-align:center;padding:11px 8px;cursor:pointer">⬆ 복원<input id="importLog" type="file" accept="application/json,.json" style="display:none"/></label><button class="sec" id="pinLast" style="flex:1;font-size:12px"'+(log.length?'':' disabled style="opacity:.45"')+'>📌 마지막 기억</button><button class="sec" id="clrMem" style="flex:1;font-size:12px"'+(mem.length?'':' disabled style="opacity:.45"')+'>기억 비우기</button></div>'
+      +'<div class="row" style="gap:6px;margin-bottom:8px"><button class="sec" id="exportLog" style="flex:1;font-size:12px">⬇ 대화 백업</button><label class="sec" style="flex:1;font-size:12px;text-align:center;padding:11px 8px;cursor:pointer">⬆ 복원<input id="importLog" type="file" accept="application/json,.json" style="display:none"/></label><button class="sec" id="pinLast" style="flex:1;font-size:12px"'+(log.length?'':' disabled style="opacity:.45"')+'>📌 마지막 기억</button><button class="sec" id="clrLog" style="flex:1;font-size:12px"'+(log.length?'':' disabled style="opacity:.45"')+'>대화 비우기</button><button class="sec" id="clrMem" style="flex:1;font-size:12px"'+(mem.length?'':' disabled style="opacity:.45"')+'>기억 비우기</button></div>'
       +'<div id="sharePeak" style="display:none;margin-top:12px;padding:10px;border:1px solid #f472b644;border-radius:12px">'
       +'<p style="margin:0 0 6px;font-size:13px">✨ 지금 순간 공유</p>'
       +'<button class="sec" id="shareBtn">📤 공유</button></div>'
@@ -208,6 +208,12 @@ try{if(!sessionStorage.getItem('lw_p34_ai_compa_session_counter')){sessionStorag
     };
     var cm=document.getElementById('clrMem');
     if(cm) cm.onclick=function(){ mem=[]; saveMem(); render(); try{legionTrack('mem_clear',{})}catch(e){} };
+    var cl=document.getElementById('clrLog');
+    if(cl) cl.onclick=function(){
+      if(!log.length)return;
+      if(!confirm('대화 기록을 비울까? (기억 키워드는 유지)'))return;
+      log=[]; saveLog(); render(); try{legionTrack('log_clear',{})}catch(e){}
+    };
     var pl=document.getElementById('pinLast');
     if(pl) pl.onclick=function(){
       try{
