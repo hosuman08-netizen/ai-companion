@@ -100,6 +100,7 @@
       })()
       +'<input id="userIn" placeholder="하고 싶은 말 (선택)" style="width:100%;margin:6px 0;padding:10px;border-radius:10px;border:1px solid #2a2438;background:#0e0c14;color:#ece8f1"/>'
       +'<div class="row" style="gap:6px;margin-bottom:6px"><button id="talk" style="flex:1">한 마디 (-1)</button><button class="sec" id="undoChat"'+(log.length<2?' disabled style="opacity:.45"':'')+'>↩ 직전</button><button class="sec" id="free"'+(freeUsed?' disabled style="opacity:.5"':'')+'>'+(freeUsed?'오늘 받음 ✓':'일일 +3')+'</button></div>'
+      +'<div class="row" style="gap:6px;margin-bottom:8px"><button class="sec" id="exportLog" style="flex:1;font-size:12px">⬇ 대화 백업</button><button class="sec" id="clrMem" style="flex:1;font-size:12px"'+(mem.length?'':' disabled style="opacity:.45"')+'>기억 비우기</button></div>'
       +'<div id="sharePeak" style="display:none;margin-top:12px;padding:10px;border:1px solid #f472b644;border-radius:12px">'
       +'<p style="margin:0 0 6px;font-size:13px">✨ 지금 순간 공유</p>'
       +'<button class="sec" id="shareBtn">📤 공유</button></div>'
@@ -140,6 +141,19 @@
       credits=Math.min(credits+1,99); save();
       render(); try{legionTrack('undo',{})}catch(e){}
     };
+    var elg=document.getElementById('exportLog');
+    if(elg) elg.onclick=function(){
+      try{
+        var payload={app:'ai-companion',exportedAt:new Date().toISOString(),mood:mood,msgs:msgs,log:log.slice(-40),mem:mem.slice(0,8)};
+        var blob=new Blob([JSON.stringify(payload,null,2)],{type:'application/json'});
+        var a=document.createElement('a'); a.href=URL.createObjectURL(blob);
+        a.download='companion-log-'+dayKey(0)+'.json'; a.click();
+        setTimeout(function(){URL.revokeObjectURL(a.href);},1500);
+        try{legionTrack('export',{n:log.length})}catch(e){}
+      }catch(e){}
+    };
+    var cm=document.getElementById('clrMem');
+    if(cm) cm.onclick=function(){ mem=[]; saveMem(); render(); try{legionTrack('mem_clear',{})}catch(e){} };
     Array.prototype.forEach.call(document.querySelectorAll('[data-kw]'),function(b){
       b.onclick=function(){
         var ui=document.getElementById('userIn');
