@@ -1,22 +1,22 @@
-
 (function(){
   var credits=+(localStorage.getItem('ai-companion_cr')||10);
   var root=document.getElementById('app');
+  var lines=['오늘 하루 어땠어?','그 이야기 더 듣고 싶어.','잠깐 쉬어도 돼.','네가 주인공이야.','내일도 여기 있을게.'];
+  var log=[];
   function save(){localStorage.setItem('ai-companion_cr',credits);}
   function render(){
-    root.innerHTML='<div class="card" style="border-color:#f472b6"><b>18+</b> Fictional entertainment · 실관계/결제 아님</div>'
-      +'<div class="card">크레딧 <b style="color:var(--gold)">'+credits+'</b> (가상)<div class="row" style="margin-top:10px"><button id="use">1 사용 · 체험</button><button class="sec" id="get">무료 +3 (쿨다운 로컬)</button></div><div id="log" class="sub" style="margin-top:10px"></div></div>';
-    document.getElementById('use').onclick=function(){
-      if(credits<=0){document.getElementById('log').textContent='크레딧 없음 · 무료 충전 또는 후원 문의';return;}
-      credits--;save();document.getElementById('log').textContent='체험 로그: ' + new Date().toLocaleTimeString() + ' · 장면 해금(가상)';
-      render();try{legionTrack('activate',{credits:credits})}catch(e){}
+    root.innerHTML='<div class="card" style="border-color:#f472b6"><b>18+</b> Fictional chat · 실관계 아님</div>'
+      +'<div class="card">크레딧 <b style="color:var(--gold)">'+credits+'</b><div id="chat" style="min-height:80px;margin:10px 0;font-size:14px">'+(log.slice(-5).join('<br>')||'…')+'</div>'
+      +'<button id="talk">한 마디 (-1)</button><button class="sec" id="free">일일 +3</button></div>';
+    document.getElementById('talk').onclick=function(){
+      if(credits<=0)return; credits--; save();
+      log.push('나: …'); log.push('AI: '+lines[Math.floor(Math.random()*lines.length)]);
+      render(); try{legionTrack('activate',{})}catch(e){}
     };
-    document.getElementById('get').onclick=function(){
-      var k='ai-companion_cd_'+new Date().toDateString();
-      if(localStorage.getItem(k)){document.getElementById('log').textContent='오늘 무료 충전 완료';return;}
-      credits+=3;localStorage.setItem(k,'1');save();render();try{legionTrack('activate',{free:1})}catch(e){}
+    document.getElementById('free').onclick=function(){
+      var k='ac_'+new Date().toDateString(); if(localStorage.getItem(k))return; localStorage.setItem(k,'1'); credits+=3; save(); render();
     };
   }
-  try{legionTrack('session_start',{app:'ai-companion'})}catch(e){}
+  try{legionTrack('session_start',{})}catch(e){}
   render();
 })();
