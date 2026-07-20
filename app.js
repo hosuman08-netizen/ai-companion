@@ -1,3 +1,6 @@
+
+/* LEGION_WAVE_73_session_counter */
+try{if(!sessionStorage.getItem('lw_p34_ai_compa_session_counter')){sessionStorage.setItem('lw_p34_ai_compa_session_counter','1');localStorage.setItem('lw_p34_ai_compa_session_counter',String((+(localStorage.getItem('lw_p34_ai_compa_session_counter')||0))+1));}}catch(e){}
 (function(){
   var credits=+(localStorage.getItem('ai-companion_cr')||10);
   var root=document.getElementById('app');
