@@ -76,8 +76,22 @@
       +(greet?'<p style="font-size:13px;opacity:.85;margin:8px 0 0">'+greet+'</p>':'')
       +'<div class="row" style="margin:8px 0;gap:6px">'+moods.map(function(m){return '<button class="sec" data-mood="'+m.id+'" style="padding:6px 10px;font-size:12px'+(mood===m.l?';border-color:var(--gold)':'')+'">'+m.l+'</button>';}).join('')+'</div>'
       +'<div id="chat" style="min-height:80px;margin:10px 0;font-size:14px">'+(log.slice(-6).join('<br>')||'<span style="opacity:.7">아직 대화 없음 — 한 마디로 시작</span>')+'</div>'
+      +(function(){
+        try{
+          var keys=[];
+          log.forEach(function(line){
+            if(line.indexOf('나: ')===0){
+              var w=line.slice(3).replace(/[^\w가-힣\s]/g,' ').trim().split(/\s+/).filter(function(x){return x.length>=2;});
+              w.forEach(function(t){if(keys.indexOf(t)<0)keys.push(t);});
+            }
+          });
+          keys=keys.slice(0,6);
+          if(!keys.length) return '';
+          return '<div class="sub" style="margin:4px 0 8px">기억 키워드 · '+keys.map(function(k){return '<span class="chip" data-kw="'+k+'" style="cursor:pointer">'+k+'</span>';}).join(' ')+'</div>';
+        }catch(e){return '';}
+      })()
       +'<input id="userIn" placeholder="하고 싶은 말 (선택)" style="width:100%;margin:6px 0;padding:10px;border-radius:10px;border:1px solid #2a2438;background:#0e0c14;color:#ece8f1"/>'
-      +'<button id="talk">한 마디 (-1)</button><button class="sec" id="free"'+(freeUsed?' disabled style="opacity:.5"':'')+'>'+(freeUsed?'오늘 받음 ✓':'일일 +3')+'</button>'
+      +'<div class="row" style="gap:6px;margin-bottom:6px"><button id="talk" style="flex:1">한 마디 (-1)</button><button class="sec" id="undoChat"'+(log.length<2?' disabled style="opacity:.45"':'')+'>↩ 직전</button><button class="sec" id="free"'+(freeUsed?' disabled style="opacity:.5"':'')+'>'+(freeUsed?'오늘 받음 ✓':'일일 +3')+'</button></div>'
       +'<div id="sharePeak" style="display:none;margin-top:12px;padding:10px;border:1px solid #f472b644;border-radius:12px">'
       +'<p style="margin:0 0 6px;font-size:13px">✨ 지금 순간 공유</p>'
       +'<button class="sec" id="shareBtn">📤 공유</button></div>'
@@ -110,6 +124,20 @@
       var k='ac_'+new Date().toDateString(); if(localStorage.getItem(k))return; localStorage.setItem(k,'1'); credits+=3; save(); render();
       try{legionTrack('daily_free',{})}catch(e){}
     };
+    var uc=document.getElementById('undoChat');
+    if(uc) uc.onclick=function(){
+      if(log.length<2)return;
+      log.pop(); log.pop(); saveLog();
+      msgs=Math.max(0,msgs-1); localStorage.setItem('ac_msgs',msgs);
+      credits=Math.min(credits+1,99); save();
+      render(); try{legionTrack('undo',{})}catch(e){}
+    };
+    Array.prototype.forEach.call(document.querySelectorAll('[data-kw]'),function(b){
+      b.onclick=function(){
+        var ui=document.getElementById('userIn');
+        if(ui){ui.value=(ui.value?ui.value+' ':'')+b.getAttribute('data-kw'); ui.focus();}
+      };
+    });
     Array.prototype.forEach.call(document.querySelectorAll('[data-mood]'),function(b){
       b.onclick=function(){mood=b.textContent; localStorage.setItem('ac_mood',mood); render(); try{legionTrack('mood',{m:mood})}catch(e){};};
     });
