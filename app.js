@@ -5,7 +5,7 @@
   var log=[];
   function save(){localStorage.setItem('ai-companion_cr',credits);}
   function render(){
-    root.innerHTML='<div class="card" style="border-color:#f472b6"><b>18+</b> Fictional chat · 실관계 아님</div>'
+    root.innerHTML='<div class="card" style="border-color:#f472b6"><b>18+</b> Fictional chat · 실관계 아님 · field#1 18+ pack</div>'
       +'<div class="card">크레딧 <b style="color:var(--gold)">'+credits+'</b><div id="chat" style="min-height:80px;margin:10px 0;font-size:14px">'+(log.slice(-5).join('<br>')||'…')+'</div>'
       +'<button id="talk">한 마디 (-1)</button><button class="sec" id="free">일일 +3</button></div>';
     document.getElementById('talk').onclick=function(){
