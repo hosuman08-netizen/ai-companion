@@ -119,7 +119,7 @@ try{if(!sessionStorage.getItem('lw_p34_ai_compa_session_counter')){sessionStorag
       })()
       +'<input id="userIn" placeholder="하고 싶은 말 (선택)" style="width:100%;margin:6px 0;padding:10px;border-radius:10px;border:1px solid #2a2438;background:#0e0c14;color:#ece8f1"/>'
       +'<div class="row" style="gap:6px;margin-bottom:6px"><button id="talk" style="flex:1">한 마디 (-1)</button><button class="sec" id="undoChat"'+(log.length<2?' disabled style="opacity:.45"':'')+'>↩ 직전</button><button class="sec" id="free"'+(freeUsed?' disabled style="opacity:.5"':'')+'>'+(freeUsed?'오늘 받음 ✓':'일일 +3')+'</button></div>'
-      +'<div class="row" style="gap:6px;margin-bottom:8px"><button class="sec" id="exportLog" style="flex:1;font-size:12px">⬇ 대화 백업</button><button class="sec" id="pinLast" style="flex:1;font-size:12px"'+(log.length?'':' disabled style="opacity:.45"')+'>📌 마지막 기억</button><button class="sec" id="clrMem" style="flex:1;font-size:12px"'+(mem.length?'':' disabled style="opacity:.45"')+'>기억 비우기</button></div>'
+      +'<div class="row" style="gap:6px;margin-bottom:8px"><button class="sec" id="exportLog" style="flex:1;font-size:12px">⬇ 대화 백업</button><label class="sec" style="flex:1;font-size:12px;text-align:center;padding:11px 8px;cursor:pointer">⬆ 복원<input id="importLog" type="file" accept="application/json,.json" style="display:none"/></label><button class="sec" id="pinLast" style="flex:1;font-size:12px"'+(log.length?'':' disabled style="opacity:.45"')+'>📌 마지막 기억</button><button class="sec" id="clrMem" style="flex:1;font-size:12px"'+(mem.length?'':' disabled style="opacity:.45"')+'>기억 비우기</button></div>'
       +'<div id="sharePeak" style="display:none;margin-top:12px;padding:10px;border:1px solid #f472b644;border-radius:12px">'
       +'<p style="margin:0 0 6px;font-size:13px">✨ 지금 순간 공유</p>'
       +'<button class="sec" id="shareBtn">📤 공유</button></div>'
@@ -175,6 +175,21 @@ try{if(!sessionStorage.getItem('lw_p34_ai_compa_session_counter')){sessionStorag
         setTimeout(function(){URL.revokeObjectURL(a.href);},1500);
         try{legionTrack('export',{n:log.length})}catch(e){}
       }catch(e){}
+    };
+    var ilg=document.getElementById('importLog');
+    if(ilg) ilg.onchange=function(){
+      if(!ilg.files||!ilg.files[0])return;
+      var r=new FileReader();
+      r.onload=function(){
+        try{
+          var p=JSON.parse(r.result);
+          if(Array.isArray(p.log)){ log=log.concat(p.log).slice(-40); saveLog(); }
+          if(Array.isArray(p.mem)){ p.mem.forEach(function(m){ if(m&&mem.indexOf(m)<0) mem.push(m); }); mem=mem.slice(0,8); saveMem(); }
+          if(p.mood){ mood=p.mood; localStorage.setItem('ac_mood',mood); }
+          render(); try{legionTrack('import',{n:(p.log||[]).length})}catch(e){}
+        }catch(e){ alert('대화 JSON을 확인해 주세요'); }
+      };
+      r.readAsText(ilg.files[0]); ilg.value='';
     };
     var cm=document.getElementById('clrMem');
     if(cm) cm.onclick=function(){ mem=[]; saveMem(); render(); try{legionTrack('mem_clear',{})}catch(e){} };
