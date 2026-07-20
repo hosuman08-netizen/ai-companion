@@ -39,6 +39,16 @@
       st.last=t;
       localStorage.setItem('ac_streak',JSON.stringify(st));
       try{legionTrack('streak',{count:st.count,froze:froze})}catch(e){}
+      try{
+        if(st.count===3 && !localStorage.getItem('ac_milestone_3')){
+          localStorage.setItem('ac_milestone_3','1'); credits+=2; save();
+          try{legionTrack('milestone',{d:3})}catch(e){}
+        }
+        if(st.count===7 && !localStorage.getItem('ac_milestone_7')){
+          localStorage.setItem('ac_milestone_7','1'); credits+=5; save();
+          try{legionTrack('milestone',{d:7})}catch(e){}
+        }
+      }catch(e){}
       return st;
     }catch(e){return {count:0};}
   }
