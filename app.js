@@ -43,17 +43,40 @@
     var ms=Math.max(0,end-Date.now());
     return Math.floor(ms/3600000)+'h '+Math.floor((ms%3600000)/60000)+'m';
   }
+  function pickReply(userTxt){
+    var base=lines[Math.floor(Math.random()*lines.length)];
+    if(userTxt){
+      var t=userTxt.slice(0,40);
+      var echoes=['\''+t+'\' — 그 말 마음에 남네.','방금 한 말, 내가 붙잡아둘게.','\''+t+'\' 쪽을 더 파보자.'];
+      if(Math.random()<0.55) base=echoes[Math.floor(Math.random()*echoes.length)];
+    }
+    if(mood) base='['+mood+'] '+base;
+    return base;
+  }
+  function greetLine(){
+    try{
+      var last=localStorage.getItem('ac_last_visit');
+      localStorage.setItem('ac_last_visit',dayKey(0));
+      if(last && last!==dayKey(0) && mood) return '다시 왔네. 지난번 무드('+mood+') 이어서 갈까?';
+      if(scBoot()>=3) return '연속 '+scBoot()+'일 · 오늘도 한 치.';
+    }catch(e){}
+    return '';
+  }
+  function scBoot(){try{return (JSON.parse(localStorage.getItem('ac_streak')||'{}').count)||0;}catch(e){return 0;}}
   function render(){
     var st=JSON.parse(localStorage.getItem('ac_streak')||'{}');
     var sc=st.count||0;
     var ready=!st.shieldLast||((new Date(dayKey(0))-new Date(st.shieldLast))/86400000)>=7;
     var freeUsed=!!localStorage.getItem('ac_'+new Date().toDateString());
     var moods=[{id:'calm',l:'평온'},{id:'spark',l:'설렘'},{id:'focus',l:'집중'},{id:'soft',l:'다정'}];
+    var greet=greetLine();
     root.innerHTML='<div class="card" style="border-color:#f472b6"><b>18+</b> Fictional chat · 실관계 아님 · field#1 18+ pack</div>'
       +'<div class="card"><span class="chip">🔥 '+sc+'일'+(sc>=3&&ready?' · 🛡️':'')+'</span> <span class="chip">일일창 '+fomoLeft()+'</span>'
       +'<div style="margin-top:8px">크레딧 <b style="color:var(--gold)">'+credits+'</b> · 말 '+msgs+'회'+(mood?' · 무드 <b>'+mood+'</b>':'')+'</div>'
+      +(greet?'<p style="font-size:13px;opacity:.85;margin:8px 0 0">'+greet+'</p>':'')
       +'<div class="row" style="margin:8px 0;gap:6px">'+moods.map(function(m){return '<button class="sec" data-mood="'+m.id+'" style="padding:6px 10px;font-size:12px'+(mood===m.l?';border-color:var(--gold)':'')+'">'+m.l+'</button>';}).join('')+'</div>'
       +'<div id="chat" style="min-height:80px;margin:10px 0;font-size:14px">'+(log.slice(-6).join('<br>')||'<span style="opacity:.7">아직 대화 없음 — 한 마디로 시작</span>')+'</div>'
+      +'<input id="userIn" placeholder="하고 싶은 말 (선택)" style="width:100%;margin:6px 0;padding:10px;border-radius:10px;border:1px solid #2a2438;background:#0e0c14;color:#ece8f1"/>'
       +'<button id="talk">한 마디 (-1)</button><button class="sec" id="free"'+(freeUsed?' disabled style="opacity:.5"':'')+'>'+(freeUsed?'오늘 받음 ✓':'일일 +3')+'</button>'
       +'<div id="sharePeak" style="display:none;margin-top:12px;padding:10px;border:1px solid #f472b644;border-radius:12px">'
       +'<p style="margin:0 0 6px;font-size:13px">✨ 지금 순간 공유</p>'
@@ -72,13 +95,14 @@
         return;
       }
       credits--; save();
-      var line=lines[Math.floor(Math.random()*lines.length)];
-      if(mood) line='['+mood+'] '+line;
-      log.push('나: …'); log.push('AI: '+line); saveLog(); msgs++; localStorage.setItem('ac_msgs',msgs);
+      var ui=document.getElementById('userIn');
+      var ut=(ui&&ui.value||'').trim().slice(0,80);
+      var line=pickReply(ut);
+      log.push('나: '+(ut||'…')); log.push('AI: '+line); saveLog(); msgs++; localStorage.setItem('ac_msgs',msgs);
       bumpStreak();
       render();
       var peak=document.getElementById('sharePeak'); if(peak) peak.style.display='block';
-      try{legionTrack('activate',{})}catch(e){}
+      try{legionTrack('activate',{typed:!!ut})}catch(e){}
       try{legionTrack('share_peak_shown',{})}catch(e){}
       try{legionTrack('money_pipe_shown',{app:'companion'})}catch(e){}
     };
