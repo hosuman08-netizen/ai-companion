@@ -12,6 +12,11 @@ try{if(!sessionStorage.getItem('lw_p34_ai_compa_session_counter')){sessionStorag
   function saveMem(){try{localStorage.setItem('ac_mem',JSON.stringify(mem.slice(0,8)));}catch(e){}}
   function todayTalks(){try{return +(localStorage.getItem('ac_talk_'+dayKey(0))||0);}catch(e){return 0;}}
   function bumpTalk(){try{localStorage.setItem('ac_talk_'+dayKey(0),String(todayTalks()+1));}catch(e){}}
+  function talkWeek(){
+    var out=[];
+    for(var i=6;i>=0;i--){ out.push(+(localStorage.getItem('ac_talk_'+dayKey(-i))||0)); }
+    return out;
+  }
 
   var SHARE_BASE='https://hosuman08-netizen.github.io/ai-companion/';
   function save(){localStorage.setItem('ai-companion_cr',credits);}
@@ -94,7 +99,7 @@ try{if(!sessionStorage.getItem('lw_p34_ai_compa_session_counter')){sessionStorag
       +'<div class="card"><span class="chip">🔥 '+sc+'일'+(sc>=3&&ready?' · 🛡️':'')+'</span> <span class="chip">일일창 '+fomoLeft()+'</span>'
       +'<div style="margin-top:8px">크레딧 <b style="color:var(--gold)">'+credits+'</b> · 말 '+msgs+' · 세션 '+sessions+' · 오늘 대화 '+todayTalks()+'/3'+(mood?' · 무드 <b>'+mood+'</b>':'')+'</div>'
       +'<div style="height:6px;background:#1c1826;border-radius:4px;margin:8px 0 0;overflow:hidden" title="오늘 대화 목표 3"><i style="display:block;height:100%;width:'+Math.min(100,Math.round(todayTalks()/3*100))+'%;background:linear-gradient(90deg,#f472b6,#e0b552)"></i></div>'
-      +(mem.length?'<div class="sub" style="margin-top:6px">기억: '+mem.slice(0,3).map(function(x){return String(x).replace(/</g,'&lt;');}).join(' · ')+'</div>':'')
+      +(mem.length?'<div class="sub" style="margin-top:6px">기억: '+mem.slice(0,3).map(function(x){return String(x).replace(/</g,'&lt;');}).join(' · ')+'</div>':'')+'<div id="talkSpark" style="display:flex;align-items:flex-end;gap:3px;height:28px;margin:8px 0"></div>'
       +(greet?'<p style="font-size:13px;opacity:.85;margin:8px 0 0">'+greet+'</p>':'')
       +'<div class="row" style="margin:8px 0;gap:6px">'+moods.map(function(m){return '<button class="sec" data-mood="'+m.id+'" style="padding:6px 10px;font-size:12px'+(mood===m.l?';border-color:var(--gold)':'')+'">'+m.l+'</button>';}).join('')+'</div>'
       +'<div id="chat" style="min-height:80px;margin:10px 0;font-size:14px">'+(log.slice(-6).join('<br>')||'<span style="opacity:.7">아직 대화 없음 — 한 마디로 시작</span>')+'</div>'
@@ -125,6 +130,11 @@ try{if(!sessionStorage.getItem('lw_p34_ai_compa_session_counter')){sessionStorag
       +'<a style="color:#ece8f1;margin:0 6px" href="https://hosuman08-netizen.github.io/soft-paywall/?utm_source=companion&utm_medium=pipe">🔒 Soft Paywall</a>'
       +'<a style="color:#e0b552;margin:0 6px" href="https://hosuman08-netizen.github.io/legion-hub/?utm_source=companion&utm_medium=pipe">🎮 Arcade</a>'
       +'</div></div>';
+    var ts=document.getElementById('talkSpark');
+    if(ts){
+      var tw=talkWeek(); var mx=Math.max.apply(null,tw.concat([1]));
+      ts.innerHTML=tw.map(function(n){var h=Math.max(3,Math.round(n/mx*24));return '<div style="flex:1;height:'+h+'px;background:'+(n>0?'#f472b6':'#2a2438')+';border-radius:2px"></div>';}).join('');
+    }
     document.getElementById('talk').onclick=function(){
       if(credits<=0){
         document.getElementById('chat').innerHTML+='<br><span style="color:#f472b6">크레딧 없음 · 일일 +3 또는 후원 문의</span>';
