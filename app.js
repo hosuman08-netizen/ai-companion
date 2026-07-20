@@ -1,7 +1,7 @@
 (function(){
   var credits=+(localStorage.getItem('ai-companion_cr')||10);
   var root=document.getElementById('app');
-  var lines=['오늘 하루 어땠어?','그 이야기 더 듣고 싶어.','잠깐 쉬어도 돼.','네가 주인공이야.','내일도 여기 있을게.'];
+  var lines=['오늘 하루 어땠어?','그 이야기 더 듣고 싶어.','잠깐 쉬어도 돼.','네가 주인공이야.','내일도 여기 있을게.','한 치 더 가보자.','지금 이 순간이 중요해.'];
   var log=[];
   var SHARE_BASE='https://hosuman08-netizen.github.io/ai-companion/';
   function save(){localStorage.setItem('ai-companion_cr',credits);}
