@@ -5,6 +5,10 @@
   var log=(function(){try{return JSON.parse(localStorage.getItem('ac_log')||'[]');}catch(e){return[];}})();
   var mood=localStorage.getItem('ac_mood')||'';
   function saveLog(){try{localStorage.setItem('ac_log',JSON.stringify(log.slice(-40)));}catch(e){}}
+  var mem=(function(){try{return JSON.parse(localStorage.getItem('ac_mem')||'[]');}catch(e){return[];}})();
+  function saveMem(){try{localStorage.setItem('ac_mem',JSON.stringify(mem.slice(0,8)));}catch(e){}}
+  function todayTalks(){try{return +(localStorage.getItem('ac_talk_'+dayKey(0))||0);}catch(e){return 0;}}
+  function bumpTalk(){try{localStorage.setItem('ac_talk_'+dayKey(0),String(todayTalks()+1));}catch(e){}}
 
   var SHARE_BASE='https://hosuman08-netizen.github.io/ai-companion/';
   function save(){localStorage.setItem('ai-companion_cr',credits);}
@@ -43,12 +47,15 @@
     var ms=Math.max(0,end-Date.now());
     return Math.floor(ms/3600000)+'h '+Math.floor((ms%3600000)/60000)+'m';
   }
-  function pickReply(userTxt){
+    function pickReply(userTxt){
     var base=lines[Math.floor(Math.random()*lines.length)];
     if(userTxt){
-      var t=userTxt.slice(0,40);
-      var echoes=['\''+t+'\' — 그 말 마음에 남네.','방금 한 말, 내가 붙잡아둘게.','\''+t+'\' 쪽을 더 파보자.'];
+      var tt=userTxt.slice(0,40);
+      var echoes=["'"+tt+"' — 그 말 마음에 남네.",'방금 한 말, 내가 붙잡아둘게.',"'"+tt+"' 쪽을 더 파보자."];
       if(Math.random()<0.55) base=echoes[Math.floor(Math.random()*echoes.length)];
+      if(tt.length>=2 && mem.indexOf(tt)<0 && Math.random()<0.4){ mem.unshift(tt); saveMem(); }
+    } else if(mem.length && Math.random()<0.35){
+      base='기억 한 조각: "'+mem[0]+'" — 이어서 말해볼까?';
     }
     if(mood) base='['+mood+'] '+base;
     return base;
@@ -72,7 +79,8 @@
     var greet=greetLine();
     root.innerHTML='<div class="card" style="border-color:#f472b6"><b>18+</b> Fictional chat · 실관계 아님 · field#1 18+ pack</div>'
       +'<div class="card"><span class="chip">🔥 '+sc+'일'+(sc>=3&&ready?' · 🛡️':'')+'</span> <span class="chip">일일창 '+fomoLeft()+'</span>'
-      +'<div style="margin-top:8px">크레딧 <b style="color:var(--gold)">'+credits+'</b> · 말 '+msgs+'회'+(mood?' · 무드 <b>'+mood+'</b>':'')+'</div>'
+      +'<div style="margin-top:8px">크레딧 <b style="color:var(--gold)">'+credits+'</b> · 말 '+msgs+'회 · 오늘 대화 '+todayTalks()+'/3'+(mood?' · 무드 <b>'+mood+'</b>':'')+'</div>'
+      +(mem.length?'<div class="sub" style="margin-top:6px">기억: '+mem.slice(0,3).map(function(x){return String(x).replace(/</g,'&lt;');}).join(' · ')+'</div>':'')
       +(greet?'<p style="font-size:13px;opacity:.85;margin:8px 0 0">'+greet+'</p>':'')
       +'<div class="row" style="margin:8px 0;gap:6px">'+moods.map(function(m){return '<button class="sec" data-mood="'+m.id+'" style="padding:6px 10px;font-size:12px'+(mood===m.l?';border-color:var(--gold)':'')+'">'+m.l+'</button>';}).join('')+'</div>'
       +'<div id="chat" style="min-height:80px;margin:10px 0;font-size:14px">'+(log.slice(-6).join('<br>')||'<span style="opacity:.7">아직 대화 없음 — 한 마디로 시작</span>')+'</div>'
@@ -113,7 +121,7 @@
       var ut=(ui&&ui.value||'').trim().slice(0,80);
       var line=pickReply(ut);
       log.push('나: '+(ut||'…')); log.push('AI: '+line); saveLog(); msgs++; localStorage.setItem('ac_msgs',msgs);
-      bumpStreak();
+      bumpTalk(); bumpStreak();
       render();
       var peak=document.getElementById('sharePeak'); if(peak) peak.style.display='block';
       try{legionTrack('activate',{typed:!!ut})}catch(e){}
