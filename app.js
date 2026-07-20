@@ -1,7 +1,7 @@
 (function(){
   var credits=+(localStorage.getItem('ai-companion_cr')||10);
   var root=document.getElementById('app');
-  var lines=['오늘 하루 어땠어?','그 이야기 더 듣고 싶어.','잠깐 쉬어도 돼.','네가 주인공이야.','내일도 여기 있을게.','한 치 더 가보자.','지금 이 순간이 중요해.'];
+  var lines=['오늘 하루 어땠어?','그 이야기 더 듣고 싶어.','잠깐 쉬어도 돼.','네가 주인공이야.','내일도 여기 있을게.','한 치 더 가보자.','지금 이 순간이 중요해.','숨 한 번 크게.','그 선택, 나쁘지 않아.','내가 기억할게.','천천히 말해도 돼.','정진 중이네.']; var msgs=+(localStorage.getItem('ac_msgs')||0);
   var log=[];
   var SHARE_BASE='https://hosuman08-netizen.github.io/ai-companion/';
   function save(){localStorage.setItem('ai-companion_cr',credits);}
@@ -46,7 +46,7 @@
     var ready=!st.shieldLast||((new Date(dayKey(0))-new Date(st.shieldLast))/86400000)>=7;
     root.innerHTML='<div class="card" style="border-color:#f472b6"><b>18+</b> Fictional chat · 실관계 아님 · field#1 18+ pack</div>'
       +'<div class="card"><span class="chip">🔥 '+sc+'일'+(sc>=3&&ready?' · 🛡️':'')+'</span> <span class="chip">일일창 '+fomoLeft()+'</span>'
-      +'<div style="margin-top:8px">크레딧 <b style="color:var(--gold)">'+credits+'</b></div>'
+      +'<div style="margin-top:8px">크레딧 <b style="color:var(--gold)">'+credits+'</b> · 말 '+msgs+'회</div>'
       +'<div id="chat" style="min-height:80px;margin:10px 0;font-size:14px">'+(log.slice(-5).join('<br>')||'<span style="opacity:.7">아직 대화 없음 — 한 마디로 시작</span>')+'</div>'
       +'<button id="talk">한 마디 (-1)</button><button class="sec" id="free">일일 +3</button>'
       +'<div id="sharePeak" style="display:none;margin-top:12px;padding:10px;border:1px solid #f472b644;border-radius:12px">'
@@ -67,7 +67,7 @@
       }
       credits--; save();
       var line=lines[Math.floor(Math.random()*lines.length)];
-      log.push('나: …'); log.push('AI: '+line);
+      log.push('나: …'); log.push('AI: '+line); msgs++; localStorage.setItem('ac_msgs',msgs);
       bumpStreak();
       render();
       var peak=document.getElementById('sharePeak'); if(peak) peak.style.display='block';
