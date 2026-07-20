@@ -17,6 +17,14 @@ try{if(!sessionStorage.getItem('lw_p34_ai_compa_session_counter')){sessionStorag
     for(var i=6;i>=0;i--){ out.push(+(localStorage.getItem('ac_talk_'+dayKey(-i))||0)); }
     return out;
   }
+  function moodWeek(){
+    var out=[];
+    for(var i=6;i>=0;i--){ out.push(localStorage.getItem('ac_mood_day_'+dayKey(-i))||''); }
+    return out;
+  }
+  function stampMoodDay(){
+    try{ if(mood) localStorage.setItem('ac_mood_day_'+dayKey(0), mood); }catch(e){}
+  }
 
   var SHARE_BASE='https://hosuman08-netizen.github.io/ai-companion/';
   function save(){localStorage.setItem('ai-companion_cr',credits);}
@@ -100,6 +108,7 @@ try{if(!sessionStorage.getItem('lw_p34_ai_compa_session_counter')){sessionStorag
       +'<div style="margin-top:8px">크레딧 <b style="color:var(--gold)">'+credits+'</b> · 말 '+msgs+' · 세션 '+sessions+' · 오늘 대화 '+todayTalks()+'/3'+(mood?' · 무드 <b>'+mood+'</b>':'')+'</div>'
       +'<div style="height:6px;background:#1c1826;border-radius:4px;margin:8px 0 0;overflow:hidden" title="오늘 대화 목표 3"><i style="display:block;height:100%;width:'+Math.min(100,Math.round(todayTalks()/3*100))+'%;background:linear-gradient(90deg,#f472b6,#e0b552)"></i></div>'
       +(mem.length?'<div class="sub" style="margin-top:6px">기억: '+mem.slice(0,3).map(function(x){return String(x).replace(/</g,'&lt;');}).join(' · ')+'</div>':'')+'<div id="talkSpark" style="display:flex;align-items:flex-end;gap:3px;height:28px;margin:8px 0"></div>'
+      +'<div id="moodWeek" class="sub" style="margin:4px 0 0;display:flex;gap:4px;flex-wrap:wrap"></div>'
       +(greet?'<p style="font-size:13px;opacity:.85;margin:8px 0 0">'+greet+'</p>':'')
       +'<div class="row" style="margin:8px 0;gap:6px">'+moods.map(function(m){return '<button class="sec" data-mood="'+m.id+'" style="padding:6px 10px;font-size:12px'+(mood===m.l?';border-color:var(--gold)':'')+'">'+m.l+'</button>';}).join('')+'</div>'
       +'<div id="chat" style="min-height:80px;margin:10px 0;font-size:14px">'+(log.slice(-6).join('<br>')||'<span style="opacity:.7">아직 대화 없음 — 한 마디로 시작</span>')+'</div>'
@@ -135,6 +144,12 @@ try{if(!sessionStorage.getItem('lw_p34_ai_compa_session_counter')){sessionStorag
       var tw=talkWeek(); var mx=Math.max.apply(null,tw.concat([1]));
       ts.innerHTML=tw.map(function(n){var h=Math.max(3,Math.round(n/mx*24));return '<div style="flex:1;height:'+h+'px;background:'+(n>0?'#f472b6':'#2a2438')+';border-radius:2px"></div>';}).join('');
     }
+    var mw=document.getElementById('moodWeek');
+    if(mw){
+      var mwk=moodWeek();
+      var filled=mwk.filter(Boolean).length;
+      mw.innerHTML='무드7일 '+filled+'/7 · '+mwk.map(function(m){return '<span class="chip" style="padding:2px 6px;font-size:10px">'+(m||'·')+'</span>';}).join('');
+    }
     document.getElementById('talk').onclick=function(){
       if(credits<=0){
         document.getElementById('chat').innerHTML+='<br><span style="color:#f472b6">크레딧 없음 · 일일 +3 또는 후원 문의</span>';
@@ -146,10 +161,10 @@ try{if(!sessionStorage.getItem('lw_p34_ai_compa_session_counter')){sessionStorag
       var ut=(ui&&ui.value||'').trim().slice(0,80);
       var line=pickReply(ut);
       log.push('나: '+(ut||'…')); log.push('AI: '+line); saveLog(); msgs++; localStorage.setItem('ac_msgs',msgs);
-      bumpTalk(); bumpStreak();
+      bumpTalk(); bumpStreak(); stampMoodDay();
       render();
       var peak=document.getElementById('sharePeak'); if(peak) peak.style.display='block';
-      try{legionTrack('activate',{typed:!!ut})}catch(e){}
+      try{legionTrack('activate',{typed:!!ut,talks:todayTalks()})}catch(e){}
       try{legionTrack('share_peak_shown',{})}catch(e){}
       try{legionTrack('money_pipe_shown',{app:'companion'})}catch(e){}
     };
@@ -214,7 +229,7 @@ try{if(!sessionStorage.getItem('lw_p34_ai_compa_session_counter')){sessionStorag
       };
     });
     Array.prototype.forEach.call(document.querySelectorAll('[data-mood]'),function(b){
-      b.onclick=function(){mood=b.textContent; localStorage.setItem('ac_mood',mood); render(); try{legionTrack('mood',{m:mood})}catch(e){};};
+      b.onclick=function(){mood=b.textContent; localStorage.setItem('ac_mood',mood); stampMoodDay(); render(); try{legionTrack('mood',{m:mood})}catch(e){};};
     });
     var sb=document.getElementById('shareBtn');
     if(sb) sb.onclick=function(){
