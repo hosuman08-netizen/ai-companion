@@ -52,9 +52,10 @@ try{if(!sessionStorage.getItem('lw_p34_ai_compa_session_counter')){sessionStorag
         if(ready){st.shieldLast=t;st.last=y;froze=true;try{legionTrack('streak_freeze',{count:st.count})}catch(e){}}
       }
       st.count=(st.last===y)?(st.count||0)+1:1;
+      st.best=Math.max(st.best||0, st.count||0);
       st.last=t;
       localStorage.setItem('ac_streak',JSON.stringify(st));
-      try{legionTrack('streak',{count:st.count,froze:froze})}catch(e){}
+      try{legionTrack('streak',{count:st.count,best:st.best,froze:froze})}catch(e){}
       try{
         if(st.count===3 && !localStorage.getItem('ac_milestone_3')){
           localStorage.setItem('ac_milestone_3','1'); credits+=2; save();
@@ -103,10 +104,13 @@ try{if(!sessionStorage.getItem('lw_p34_ai_compa_session_counter')){sessionStorag
     var freeUsed=!!localStorage.getItem('ac_'+new Date().toDateString());
     var moods=[{id:'calm',l:'평온'},{id:'spark',l:'설렘'},{id:'focus',l:'집중'},{id:'soft',l:'다정'}];
     var greet=greetLine();
+    var tt=todayTalks();
+    var ytt=+(localStorage.getItem('ac_talk_'+dayKey(-1))||0);
+    var tw0=talkWeek(); var active=tw0.filter(function(n){return n>0;}).length;
     root.innerHTML='<div class="card" style="border-color:#f472b6"><b>18+</b> Fictional chat · 실관계 아님 · field#1 18+ pack</div>'
-      +'<div class="card"><span class="chip">🔥 '+sc+'일'+(sc>=3&&ready?' · 🛡️':'')+'</span> <span class="chip">일일창 '+fomoLeft()+'</span>'
-      +'<div style="margin-top:8px">크레딧 <b style="color:var(--gold)">'+credits+'</b> · 말 '+msgs+' · 세션 '+sessions+' · 오늘 대화 '+todayTalks()+'/3'+(mood?' · 무드 <b>'+mood+'</b>':'')+'</div>'
-      +'<div style="height:6px;background:#1c1826;border-radius:4px;margin:8px 0 0;overflow:hidden" title="오늘 대화 목표 3"><i style="display:block;height:100%;width:'+Math.min(100,Math.round(todayTalks()/3*100))+'%;background:linear-gradient(90deg,#f472b6,#e0b552)"></i></div>'
+      +'<div class="card"><span class="chip">🔥 '+sc+'일'+(sc>=3&&ready?' · 🛡️':'')+'</span>'+(st.best>sc?' <span class="chip">최장 <b>'+st.best+'</b>일</span>':'')+' <span class="chip">일일창 '+fomoLeft()+'</span> <span class="chip">7일 활동일 '+active+'/7</span> <span class="chip">전일 '+(tt-ytt>=0?'+':'')+(tt-ytt)+'</span>'
+      +'<div style="margin-top:8px">크레딧 <b style="color:var(--gold)">'+credits+'</b> · 말 '+msgs+' · 세션 '+sessions+' · 오늘 대화 '+tt+'/3'+(mood?' · 무드 <b>'+mood+'</b>':'')+'</div>'
+      +'<div style="height:6px;background:#1c1826;border-radius:4px;margin:8px 0 0;overflow:hidden" title="오늘 대화 목표 3"><i style="display:block;height:100%;width:'+Math.min(100,Math.round(tt/3*100))+'%;background:linear-gradient(90deg,#f472b6,#e0b552)"></i></div>'
       +(mem.length?'<div class="sub" style="margin-top:6px">기억: '+mem.slice(0,3).map(function(x){return String(x).replace(/</g,'&lt;');}).join(' · ')+'</div>':'')+'<div id="talkSpark" style="display:flex;align-items:flex-end;gap:3px;height:28px;margin:8px 0"></div>'
       +'<div id="moodWeek" class="sub" style="margin:4px 0 0;display:flex;gap:4px;flex-wrap:wrap"></div>'
       +(greet?'<p style="font-size:13px;opacity:.85;margin:8px 0 0">'+greet+'</p>':'')
@@ -239,10 +243,10 @@ try{if(!sessionStorage.getItem('lw_p34_ai_compa_session_counter')){sessionStorag
     });
     var sb=document.getElementById('shareBtn');
     if(sb) sb.onclick=function(){
-      var text='AI Companion (fictional 18+) · '+shareUrl();
+      var text='AI Companion 🔥'+sc+'일 · 오늘 '+todayTalks()+'/3 · 7일 활동일 '+active+'/7 (fictional 18+)\n'+shareUrl();
       if(navigator.share) navigator.share({text:text,url:shareUrl()}).catch(function(){});
       else if(navigator.clipboard) navigator.clipboard.writeText(text);
-      try{legionTrack('share_peak',{})}catch(e){}
+      try{legionTrack('share_peak',{sc:sc,tt:todayTalks()})}catch(e){}
     };
   }
   try{
