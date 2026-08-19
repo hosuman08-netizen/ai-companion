@@ -3,6 +3,21 @@
 try{if(!sessionStorage.getItem('lw_p34_ai_compa_session_counter')){sessionStorage.setItem('lw_p34_ai_compa_session_counter','1');localStorage.setItem('lw_p34_ai_compa_session_counter',String((+(localStorage.getItem('lw_p34_ai_compa_session_counter')||0))+1));}}catch(e){}
 (function(){
   var credits=+(localStorage.getItem('ai-companion_cr')||10);
+  function loadPersona(){
+    var d={name:'루나',honor:'너',greet:'왔어? 기다렸어.'};
+    try{
+      var p=JSON.parse(localStorage.getItem('ac_persona')||'null');
+      if(p&&typeof p==='object'){
+        if(p.name) d.name=String(p.name).slice(0,12);
+        if(p.honor) d.honor=String(p.honor).slice(0,8);
+        if(p.greet) d.greet=String(p.greet).slice(0,48);
+      }
+    }catch(e){}
+    return d;
+  }
+  var persona=loadPersona();
+  function savePersona(){try{localStorage.setItem('ac_persona',JSON.stringify({name:persona.name,honor:persona.honor,greet:persona.greet}));}catch(e){}}
+  function escAttr(s){return String(s||'').replace(/&/g,'&amp;').replace(/"/g,'&quot;').replace(/</g,'&lt;');}
   var root=document.getElementById('app');
   var lines=['오늘 하루 어땠어?','그 이야기 더 듣고 싶어.','잠깐 쉬어도 돼.','네가 주인공이야.','내일도 여기 있을게.','한 치 더 가보자.','지금 이 순간이 중요해.','숨 한 번 크게.','그 선택, 나쁘지 않아.','내가 기억할게.','천천히 말해도 돼.','정진 중이네.','숨 고르자.','그 마음 알 것 같아.']; var msgs=+(localStorage.getItem('ac_msgs')||0); var sessions=+(localStorage.getItem('ac_sessions')||0); try{if(!sessionStorage.getItem('ac_once')){sessionStorage.setItem('ac_once','1');sessions++;localStorage.setItem('ac_sessions',sessions);}}catch(e){}
   var log=(function(){try{return JSON.parse(localStorage.getItem('ac_log')||'[]');}catch(e){return[];}})();
@@ -85,6 +100,7 @@ try{if(!sessionStorage.getItem('lw_p34_ai_compa_session_counter')){sessionStorag
       base='기억 한 조각: "'+mem[0]+'" — 이어서 말해볼까?';
     }
     if(mood) base='['+mood+'] '+base;
+    if(persona.honor) base=persona.honor+', '+base;
     return base;
   }
   function greetLine(){
@@ -94,7 +110,7 @@ try{if(!sessionStorage.getItem('lw_p34_ai_compa_session_counter')){sessionStorag
       if(last && last!==dayKey(0) && mood) return '다시 왔네. 지난번 무드('+mood+') 이어서 갈까?';
       if(scBoot()>=3) return '연속 '+scBoot()+'일 · 오늘도 한 치.';
     }catch(e){}
-    return '';
+    return (persona.greet||'');
   }
   function scBoot(){try{return (JSON.parse(localStorage.getItem('ac_streak')||'{}').count)||0;}catch(e){return 0;}}
   function render(){
@@ -107,15 +123,21 @@ try{if(!sessionStorage.getItem('lw_p34_ai_compa_session_counter')){sessionStorag
     var tt=todayTalks();
     var ytt=+(localStorage.getItem('ac_talk_'+dayKey(-1))||0);
     var tw0=talkWeek(); var active=tw0.filter(function(n){return n>0;}).length;
-    root.innerHTML='<div class="card" style="border-color:#f472b6"><b>18+</b> Fictional chat · 실관계 아님 · field#1 18+ pack</div>'
-      +'<div class="card"><span class="chip">🔥 '+sc+'일'+(sc>=3&&ready?' · 🛡️':'')+'</span>'+(st.best>sc?' <span class="chip">최장 <b>'+st.best+'</b>일</span>':'')+' <span class="chip">일일창 '+fomoLeft()+'</span> <span class="chip">7일 활동일 '+active+'/7</span> <span class="chip">전일 '+(tt-ytt>=0?'+':'')+(tt-ytt)+'</span> <span class="chip">'+(freeUsed?'일일+3 수령':'일일+3 대기')+'</span>'
-      +'<div style="margin-top:8px">크레딧 <b style="color:var(--gold)">'+credits+'</b> · 말 '+msgs+' · 세션 '+sessions+' · 오늘 대화 '+tt+'/3'+(mood?' · 무드 <b>'+mood+'</b>':'')+' · 목표 '+(tt>=3?'✓':'→3')+'</div>'
-      +'<div style="height:6px;background:#1c1826;border-radius:4px;margin:8px 0 0;overflow:hidden" title="오늘 대화 목표 3"><i style="display:block;height:100%;width:'+Math.min(100,Math.round(tt/3*100))+'%;background:linear-gradient(90deg,#f472b6,#e0b552)"></i></div>'
-      +(mem.length?'<div class="sub" style="margin-top:6px">기억: '+mem.slice(0,3).map(function(x){return String(x).replace(/</g,'&lt;');}).join(' · ')+'</div>':'')+'<div id="talkSpark" style="display:flex;align-items:flex-end;gap:3px;height:28px;margin:8px 0"></div>'
-      +'<div id="moodWeek" class="sub" style="margin:4px 0 0;display:flex;gap:4px;flex-wrap:wrap"></div>'
-      +(greet?'<p style="font-size:13px;opacity:.85;margin:8px 0 0">'+greet+'</p>':'')
-      +'<div class="row" style="margin:8px 0;gap:6px">'+moods.map(function(m){return '<button class="sec" data-mood="'+m.id+'" style="padding:6px 10px;font-size:12px'+(mood===m.l?';border-color:var(--gold)':'')+'">'+m.l+'</button>';}).join('')+'</div>'
-      +'<div id="chat" style="min-height:80px;margin:10px 0;font-size:14px">'+(log.slice(-6).join('<br>')||'<span style="opacity:.7">아직 대화 없음 — 한 마디로 시작</span>')+'</div>'
+    var initial=(persona.name||'루').slice(0,1);
+    root.innerHTML='<div class="card" style="border-color:#f472b6"><b>18+</b> Fictional chat · 실관계 아님 · LLM 연결 없음</div>'
+      +'<div class="card" style="display:flex;gap:12px;align-items:center">'
+      +'<div style="width:48px;height:48px;border-radius:50%;background:#1c1826;border:1px solid var(--gold);display:flex;align-items:center;justify-content:center;font-weight:800;color:var(--gold);flex-shrink:0">'+escAttr(initial)+'</div>'
+      +'<div style="flex:1;min-width:0"><b>'+escAttr(persona.name)+'</b> · '+escAttr(persona.honor)
+      +'<p class="sub" style="margin:4px 0 0">'+escAttr(persona.greet)+' · 로컬 1캐릭</p></div></div>'
+      +'<details class="card" style="padding:10px 14px"><summary style="cursor:pointer;font-size:12px;color:var(--dim)">페르소나 수정 (로컬 · API 없음)</summary>'
+      +'<input id="pnName" placeholder="이름" value="'+escAttr(persona.name)+'"/>'
+      +'<input id="pnHonor" placeholder="호칭" value="'+escAttr(persona.honor)+'"/>'
+      +'<input id="pnGreet" placeholder="인사문" value="'+escAttr(persona.greet)+'"/>'
+      +'</details>'
+      +'<div class="card">'
+      +(greet?'<p style="font-size:13px;opacity:.85;margin:0 0 8px">'+escAttr(persona.name)+': '+greet+'</p>':'')
+      +'<div class="row" style="margin:0 0 8px;gap:6px">'+moods.map(function(m){return '<button class="sec" data-mood="'+m.id+'" style="padding:6px 10px;font-size:12px'+(mood===m.l?';border-color:var(--gold)':'')+'">'+m.l+'</button>';}).join('')+'</div>'
+      +'<div id="chat" style="min-height:80px;margin:0 0 10px;font-size:14px">'+(log.slice(-6).join('<br>')||'<span style="opacity:.85">'+escAttr(persona.name)+': '+escAttr(persona.greet||'한 마디로 시작')+'</span>')+'</div>'
       +(function(){
         try{
           var keys=[];
@@ -132,17 +154,25 @@ try{if(!sessionStorage.getItem('lw_p34_ai_compa_session_counter')){sessionStorag
       })()
       +'<input id="userIn" placeholder="하고 싶은 말 (선택)" style="width:100%;margin:6px 0;padding:10px;border-radius:10px;border:1px solid #2a2438;background:#0e0c14;color:#ece8f1"/>'
       +'<div class="row" style="gap:6px;margin-bottom:6px"><button id="talk" style="flex:1">한 마디 (-1)</button><button class="sec" id="undoChat"'+(log.length<2?' disabled style="opacity:.45"':'')+'>↩ 직전</button><button class="sec" id="free"'+(freeUsed?' disabled style="opacity:.5"':'')+'>'+(freeUsed?'오늘 받음 ✓':'일일 +3')+'</button></div>'
-      +'<div class="row" style="gap:6px;margin-bottom:8px"><button class="sec" id="exportLog" style="flex:1;font-size:12px">⬇ 대화 백업</button><label class="sec" style="flex:1;font-size:12px;text-align:center;padding:11px 8px;cursor:pointer">⬆ 복원<input id="importLog" type="file" accept="application/json,.json" style="display:none"/></label><button class="sec" id="pinLast" style="flex:1;font-size:12px"'+(log.length?'':' disabled style="opacity:.45"')+'>📌 마지막 기억</button><button class="sec" id="clrLog" style="flex:1;font-size:12px"'+(log.length?'':' disabled style="opacity:.45"')+'>대화 비우기</button><button class="sec" id="clrMem" style="flex:1;font-size:12px"'+(mem.length?'':' disabled style="opacity:.45"')+'>기억 비우기</button></div>'
+      +'<p class="sub" style="margin:6px 0 0">크레딧 <b style="color:var(--gold)">'+credits+'</b> · 오늘 '+tt+'/3</p>'
+      +'</div>'
+      +'<details class="card"><summary style="cursor:pointer;font-size:12px;color:var(--dim)">통계 접기</summary>'
+      +'<span class="chip">🔥 '+sc+'일'+(sc>=3&&ready?' · 🛡️':'')+'</span>'+(st.best>sc?' <span class="chip">최장 <b>'+st.best+'</b>일</span>':'')+' <span class="chip">일일창 '+fomoLeft()+'</span> <span class="chip">7일 활동일 '+active+'/7</span> <span class="chip">전일 '+(tt-ytt>=0?'+':'')+(tt-ytt)+'</span> <span class="chip">'+(freeUsed?'일일+3 수령':'일일+3 대기')+'</span>'
+      +'<div style="margin-top:8px">말 '+msgs+' · 세션 '+sessions+(mood?' · 무드 <b>'+mood+'</b>':'')+' · 목표 '+(tt>=3?'✓':'→3')+'</div>'
+      +'<div style="height:6px;background:#1c1826;border-radius:4px;margin:8px 0 0;overflow:hidden" title="오늘 대화 목표 3"><i style="display:block;height:100%;width:'+Math.min(100,Math.round(tt/3*100))+'%;background:linear-gradient(90deg,#f472b6,#e0b552)"></i></div>'
+      +(mem.length?'<div class="sub" style="margin-top:6px">기억: '+mem.slice(0,3).map(function(x){return String(x).replace(/</g,'&lt;');}).join(' · ')+'</div>':'')+'<div id="talkSpark" style="display:flex;align-items:flex-end;gap:3px;height:28px;margin:8px 0"></div>'
+      +'<div id="moodWeek" class="sub" style="margin:4px 0 0;display:flex;gap:4px;flex-wrap:wrap"></div>'
+      +'<div class="row" style="gap:6px;margin:8px 0"><button class="sec" id="exportLog" style="flex:1;font-size:12px">⬇ 대화 백업</button><label class="sec" style="flex:1;font-size:12px;text-align:center;padding:11px 8px;cursor:pointer">⬆ 복원<input id="importLog" type="file" accept="application/json,.json" style="display:none"/></label><button class="sec" id="pinLast" style="flex:1;font-size:12px"'+(log.length?'':' disabled style="opacity:.45"')+'>📌 마지막 기억</button><button class="sec" id="clrLog" style="flex:1;font-size:12px"'+(log.length?'':' disabled style="opacity:.45"')+'>대화 비우기</button><button class="sec" id="clrMem" style="flex:1;font-size:12px"'+(mem.length?'':' disabled style="opacity:.45"')+'>기억 비우기</button></div>'
       +'<div id="sharePeak" style="display:none;margin-top:12px;padding:10px;border:1px solid #f472b644;border-radius:12px">'
       +'<p style="margin:0 0 6px;font-size:13px">✨ 지금 순간 공유</p>'
-      +'<button class="sec" id="shareBtn">📤 공유</button></div>'
+      +'<button class="sec" id="shareBtn">📤 공유</button></div></details>'
       +'<div id="moneyPipe" style="margin-top:12px;padding:10px;border:1px solid #c5a46e44;border-radius:12px;background:#16121c;text-align:center;font-size:12px">'
       +'<div style="color:#e0b552;font-weight:700;margin-bottom:4px">💎 크레딧 · 후원 (엔터 18+)</div>'
-      +'<p style="opacity:.75;margin:0 0 6px">가상 크레딧 · 실관계 아님</p>'
+      +'<p style="opacity:.75;margin:0 0 6px">가상 크레딧 · 실관계 아님 · g2/p3 링크 없음</p>'
       +'<a style="color:#ece8f1;margin:0 6px" href="mailto:hoyashi95@gmail.com?subject=%5BCompanion%5D%20credits">☕ 후원 문의</a>'
       +'<a style="color:#ece8f1;margin:0 6px" href="https://hosuman08-netizen.github.io/soft-paywall/?utm_source=companion&utm_medium=pipe">🔒 Soft Paywall</a>'
       +'<a style="color:#e0b552;margin:0 6px" href="https://hosuman08-netizen.github.io/legion-hub/?utm_source=companion&utm_medium=pipe">🎮 Arcade</a>'
-      +'</div></div>';
+      +'</div>';
     var ts=document.getElementById('talkSpark');
     if(ts){
       var tw=talkWeek(); var mx=Math.max.apply(null,tw.concat([1]));
@@ -164,7 +194,7 @@ try{if(!sessionStorage.getItem('lw_p34_ai_compa_session_counter')){sessionStorag
       var ui=document.getElementById('userIn');
       var ut=(ui&&ui.value||'').trim().slice(0,80);
       var line=pickReply(ut);
-      log.push('나: '+(ut||'…')); log.push('AI: '+line); saveLog(); msgs++; localStorage.setItem('ac_msgs',msgs);
+      log.push('나: '+(ut||'…')); log.push(persona.name+': '+line); saveLog(); msgs++; localStorage.setItem('ac_msgs',msgs);
       bumpTalk(); bumpStreak(); stampMoodDay();
       render();
       var peak=document.getElementById('sharePeak'); if(peak) peak.style.display='block';
@@ -224,7 +254,7 @@ try{if(!sessionStorage.getItem('lw_p34_ai_compa_session_counter')){sessionStorag
         var last='';
         for(var i=log.length-1;i>=0;i--){
           if(log[i].indexOf('나: ')===0){ last=log[i].slice(3).trim(); break; }
-          if(log[i].indexOf('AI: ')===0 && !last) last=log[i].slice(4).replace(/^\[[^\]]+\]\s*/,'').trim();
+          if((log[i].indexOf('AI: ')===0 || log[i].indexOf(persona.name+': ')===0) && !last) last=log[i].replace(/^[^:]+:\s*/,'').replace(/^\[[^\]]+\]\s*/,'').trim();
         }
         if(!last) return;
         last=last.slice(0,40);
@@ -240,6 +270,18 @@ try{if(!sessionStorage.getItem('lw_p34_ai_compa_session_counter')){sessionStorag
     });
     Array.prototype.forEach.call(document.querySelectorAll('[data-mood]'),function(b){
       b.onclick=function(){mood=b.textContent; localStorage.setItem('ac_mood',mood); stampMoodDay(); render(); try{legionTrack('mood',{m:mood})}catch(e){};};
+    });
+    ['pnName','pnHonor','pnGreet'].forEach(function(id){
+      var el=document.getElementById(id); if(!el)return;
+      el.onchange=el.onblur=function(){
+        var n=document.getElementById('pnName');
+        var h=document.getElementById('pnHonor');
+        var g=document.getElementById('pnGreet');
+        persona.name=((n&&n.value)||'루나').slice(0,12);
+        persona.honor=((h&&h.value)||'너').slice(0,8);
+        persona.greet=((g&&g.value)||'왔어? 기다렸어.').slice(0,48);
+        savePersona();
+      };
     });
     var sb=document.getElementById('shareBtn');
     if(sb) sb.onclick=function(){
