@@ -114,6 +114,7 @@ try{if(!sessionStorage.getItem('lw_p34_ai_compa_session_counter')){sessionStorag
   }
   /* WAVE108: 인사 3문 · 무드+어제대화수 · LLM 0 · g2 0 */
   /* WAVE117: 무드별 인사분기. 고정 4문. LLM 0 · g2 0 */
+  /* WAVE165: 무드칩 탭=그 분기 인사만 1줄. LLM 0 · g2 0 */
   var GREET_BY_MOOD={
     '평온':'숨 고르고 왔어. 천천히.',
     '설렘':'두근? 나도. 오늘 한 치.',
@@ -153,9 +154,12 @@ try{if(!sessionStorage.getItem('lw_p34_ai_compa_session_counter')){sessionStorag
       +'<input id="pnGreet" placeholder="인사문" value="'+escAttr(persona.greet)+'"/>'
       +'</details>'
       +'<div class="card">'
-      +'<div id="greet3" style="font-size:13px;opacity:.9;margin:0 0 8px">'+g3.map(function(line){
-        return '<p style="margin:0 0 4px">'+escAttr(persona.name)+': '+escAttr(line)+'</p>';
-      }).join('')+'</div>'
+      +'<div id="greet3" style="font-size:13px;opacity:.9;margin:0 0 8px">'+(mood
+        ? '<p style="margin:0 0 4px">'+escAttr(persona.name)+': '+escAttr(greetByMood())+'</p>'
+        : g3.map(function(line){
+            return '<p style="margin:0 0 4px">'+escAttr(persona.name)+': '+escAttr(line)+'</p>';
+          }).join('')
+      )+'</div>'
       +'<div class="row" style="margin:0 0 8px;gap:6px">'+moods.map(function(m){return '<button class="sec" data-mood="'+m.id+'" style="padding:6px 10px;font-size:12px'+(mood===m.l?';border-color:var(--gold)':'')+'">'+m.l+'</button>';}).join('')+'</div>'
       +'<div id="chat" style="min-height:80px;margin:0 0 10px;font-size:14px">'+(log.slice(-6).join('<br>')||'<span style="opacity:.85">'+escAttr(persona.name)+': '+escAttr(persona.greet||'한 마디로 시작')+'</span>')+'</div>'
       +(function(){
