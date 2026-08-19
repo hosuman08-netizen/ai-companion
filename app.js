@@ -112,6 +112,13 @@ try{if(!sessionStorage.getItem('lw_p34_ai_compa_session_counter')){sessionStorag
     }catch(e){}
     return (persona.greet||'');
   }
+  /* WAVE108: 인사 3문 · 무드+어제대화수 · LLM 0 · g2 0 */
+  function greet3(){
+    var ytt=+(localStorage.getItem('ac_talk_'+dayKey(-1))||0);
+    var m=mood||'아직없음';
+    var g=(persona.greet||'왔어? 기다렸어.');
+    return [g, '어제 대화 '+ytt+'마디.', '오늘 무드 '+m+'.'];
+  }
   function scBoot(){try{return (JSON.parse(localStorage.getItem('ac_streak')||'{}').count)||0;}catch(e){return 0;}}
   function render(){
     var st=JSON.parse(localStorage.getItem('ac_streak')||'{}');
@@ -120,6 +127,7 @@ try{if(!sessionStorage.getItem('lw_p34_ai_compa_session_counter')){sessionStorag
     var freeUsed=!!localStorage.getItem('ac_'+new Date().toDateString());
     var moods=[{id:'calm',l:'평온'},{id:'spark',l:'설렘'},{id:'focus',l:'집중'},{id:'soft',l:'다정'}];
     var greet=greetLine();
+    var g3=greet3();
     var tt=todayTalks();
     var ytt=+(localStorage.getItem('ac_talk_'+dayKey(-1))||0);
     var tw0=talkWeek(); var active=tw0.filter(function(n){return n>0;}).length;
@@ -135,7 +143,9 @@ try{if(!sessionStorage.getItem('lw_p34_ai_compa_session_counter')){sessionStorag
       +'<input id="pnGreet" placeholder="인사문" value="'+escAttr(persona.greet)+'"/>'
       +'</details>'
       +'<div class="card">'
-      +(greet?'<p style="font-size:13px;opacity:.85;margin:0 0 8px">'+escAttr(persona.name)+': '+greet+'</p>':'')
+      +'<div id="greet3" style="font-size:13px;opacity:.9;margin:0 0 8px">'+g3.map(function(line){
+        return '<p style="margin:0 0 4px">'+escAttr(persona.name)+': '+escAttr(line)+'</p>';
+      }).join('')+'</div>'
       +'<div class="row" style="margin:0 0 8px;gap:6px">'+moods.map(function(m){return '<button class="sec" data-mood="'+m.id+'" style="padding:6px 10px;font-size:12px'+(mood===m.l?';border-color:var(--gold)':'')+'">'+m.l+'</button>';}).join('')+'</div>'
       +'<div id="chat" style="min-height:80px;margin:0 0 10px;font-size:14px">'+(log.slice(-6).join('<br>')||'<span style="opacity:.85">'+escAttr(persona.name)+': '+escAttr(persona.greet||'한 마디로 시작')+'</span>')+'</div>'
       +(function(){
