@@ -152,6 +152,7 @@ try{if(!sessionStorage.getItem('lw_p34_ai_compa_session_counter')){sessionStorag
           return '<div class="sub" style="margin:4px 0 8px">기억 키워드 · '+keys.map(function(k){return '<span class="chip" data-kw="'+k+'" style="cursor:pointer">'+k+'</span>';}).join(' ')+'</div>';
         }catch(e){return '';}
       })()
+      +(mem.length?'<div class="sub" id="memChips" style="margin:4px 0 8px">기억 · '+mem.slice(0,8).map(function(x){var s=String(x).slice(0,32);return '<span class="chip" data-mem="'+escAttr(s)+'" style="cursor:pointer">'+escAttr(s)+'</span>';}).join(' ')+'</div>':'')
       +'<input id="userIn" placeholder="하고 싶은 말 (선택)" style="width:100%;margin:6px 0;padding:10px;border-radius:10px;border:1px solid #2a2438;background:#0e0c14;color:#ece8f1"/>'
       +'<div class="row" style="gap:6px;margin-bottom:6px"><button id="talk" style="flex:1">한 마디 (-1)</button><button class="sec" id="undoChat"'+(log.length<2?' disabled style="opacity:.45"':'')+'>↩ 직전</button><button class="sec" id="free"'+(freeUsed?' disabled style="opacity:.5"':'')+'>'+(freeUsed?'오늘 받음 ✓':'일일 +3')+'</button></div>'
       +'<p class="sub" style="margin:6px 0 0">크레딧 <b style="color:var(--gold)">'+credits+'</b> · 오늘 '+tt+'/3</p>'
@@ -266,6 +267,12 @@ try{if(!sessionStorage.getItem('lw_p34_ai_compa_session_counter')){sessionStorag
       b.onclick=function(){
         var ui=document.getElementById('userIn');
         if(ui){ui.value=(ui.value?ui.value+' ':'')+b.getAttribute('data-kw'); ui.focus();}
+      };
+    });
+    Array.prototype.forEach.call(document.querySelectorAll('[data-mem]'),function(b){
+      b.onclick=function(){
+        var ui=document.getElementById('userIn');
+        if(ui){ui.value=(ui.value?ui.value+' ':'')+b.getAttribute('data-mem'); ui.focus();}
       };
     });
     Array.prototype.forEach.call(document.querySelectorAll('[data-mood]'),function(b){
