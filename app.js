@@ -113,10 +113,20 @@ try{if(!sessionStorage.getItem('lw_p34_ai_compa_session_counter')){sessionStorag
     return (persona.greet||'');
   }
   /* WAVE108: 인사 3문 · 무드+어제대화수 · LLM 0 · g2 0 */
+  /* WAVE117: 무드별 인사분기. 고정 4문. LLM 0 · g2 0 */
+  var GREET_BY_MOOD={
+    '평온':'숨 고르고 왔어. 천천히.',
+    '설렘':'두근? 나도. 오늘 한 치.',
+    '집중':'잡생각 치웠어. 바로.',
+    '다정':'잘 왔어. 여기 앉아.'
+  };
+  function greetByMood(){
+    return GREET_BY_MOOD[mood] || (persona.greet||'왔어? 기다렸어.');
+  }
   function greet3(){
     var ytt=+(localStorage.getItem('ac_talk_'+dayKey(-1))||0);
     var m=mood||'아직없음';
-    var g=(persona.greet||'왔어? 기다렸어.');
+    var g=greetByMood();
     return [g, '어제 대화 '+ytt+'마디.', '오늘 무드 '+m+'.'];
   }
   function scBoot(){try{return (JSON.parse(localStorage.getItem('ac_streak')||'{}').count)||0;}catch(e){return 0;}}
