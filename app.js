@@ -115,6 +115,7 @@ try{if(!sessionStorage.getItem('lw_p34_ai_compa_session_counter')){sessionStorag
   /* WAVE108: 인사 3문 · 무드+어제대화수 · LLM 0 · g2 0 */
   /* WAVE117: 무드별 인사분기. 고정 4문. LLM 0 · g2 0 */
   /* WAVE165: 무드칩 탭=그 분기 인사만 1줄. LLM 0 · g2 0 */
+  /* WAVE211: 인사 1줄 탭=입력칸 삽입. LLM 0 · g2 0 · API 0 */
   var GREET_BY_MOOD={
     '평온':'숨 고르고 왔어. 천천히.',
     '설렘':'두근? 나도. 오늘 한 치.',
@@ -155,9 +156,10 @@ try{if(!sessionStorage.getItem('lw_p34_ai_compa_session_counter')){sessionStorag
       +'</details>'
       +'<div class="card">'
       +'<div id="greet3" style="font-size:13px;opacity:.9;margin:0 0 8px">'+(mood
-        ? '<p style="margin:0 0 4px">'+escAttr(persona.name)+': '+escAttr(greetByMood())+'</p>'
-        : g3.map(function(line){
-            return '<p style="margin:0 0 4px">'+escAttr(persona.name)+': '+escAttr(line)+'</p>';
+        ? '<p id="greetTap" data-greet-insert="'+escAttr(greetByMood())+'" data-greet-tap="1" style="margin:0 0 4px;cursor:pointer">'+escAttr(persona.name)+': '+escAttr(greetByMood())+'</p>'
+        : g3.map(function(line,i){
+            var tap=i===0?' id="greetTap" data-greet-insert="'+escAttr(line)+'" data-greet-tap="1" style="margin:0 0 4px;cursor:pointer"':' style="margin:0 0 4px"';
+            return '<p'+tap+'>'+escAttr(persona.name)+': '+escAttr(line)+'</p>';
           }).join('')
       )+'</div>'
       +'<div class="row" style="margin:0 0 8px;gap:6px">'+moods.map(function(m){return '<button class="sec" data-mood="'+m.id+'" style="padding:6px 10px;font-size:12px'+(mood===m.l?';border-color:var(--gold)':'')+'">'+m.l+'</button>';}).join('')+'</div>'
@@ -302,6 +304,14 @@ try{if(!sessionStorage.getItem('lw_p34_ai_compa_session_counter')){sessionStorag
     Array.prototype.forEach.call(document.querySelectorAll('[data-mood]'),function(b){
       b.onclick=function(){mood=b.textContent; localStorage.setItem('ac_mood',mood); stampMoodDay(); render(); try{legionTrack('mood',{m:mood})}catch(e){};};
     });
+    var gt=document.getElementById('greetTap');
+    if(gt) gt.onclick=function(){
+      var ui=document.getElementById('userIn');
+      var t=gt.getAttribute('data-greet-insert')||'';
+      if(!ui||!t) return;
+      ui.value=(ui.value?ui.value+' ':'')+t;
+      ui.focus();
+    };
     ['pnName','pnHonor','pnGreet'].forEach(function(id){
       var el=document.getElementById(id); if(!el)return;
       el.onchange=el.onblur=function(){
