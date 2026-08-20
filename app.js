@@ -198,7 +198,7 @@ try{if(!sessionStorage.getItem('lw_p34_ai_compa_session_counter')){sessionStorag
       +'<p style="opacity:.75;margin:0 0 6px">가상 크레딧 · 실관계 아님 · g2/p3 링크 없음</p>'
       +'<a style="color:#ece8f1;margin:0 6px" href="mailto:hoyashi95@gmail.com?subject=%5BCompanion%5D%20credits">☕ 후원 문의</a>'
       +'<a style="color:#ece8f1;margin:0 6px" href="https://hosuman08-netizen.github.io/soft-paywall/?utm_source=companion&utm_medium=pipe">🔒 Soft Paywall</a>'
-      +'<a style="color:#e0b552;margin:0 6px" href="https://hosuman08-netizen.github.io/legion-hub/?utm_source=companion&utm_medium=pipe">🎮 Arcade</a>'
+      +''
       +'</div>';
     var ts=document.getElementById('talkSpark');
     if(ts){
